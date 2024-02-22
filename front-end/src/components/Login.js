@@ -13,9 +13,13 @@ const Login = () => {
     }
 }, [])
 
+function handleFormSubmit(event) {
+  event.preventDefault();
+}
+
   const handleLogin = async () => {
   // Test des champs : console.warn(email,password);
-  let result = await fetch("https://uuu-3fwk.onrender.com/login", {
+  let result = await fetch("http://localhost:5000/login", {
         method:'post',
         body: JSON.stringify({email,password}),
         headers: {
@@ -35,16 +39,20 @@ const Login = () => {
     }
   };
   return (
-    <div className="login">
+    <form onSubmit={handleFormSubmit} className="login">
       <h1>Se connecter</h1>
+      <label for="email"></label>
       <input
+        id="email"
         type="text"
         className="inputBox"
         placeholder="Entrez votre email"
         value={email}
         onChange={(e)=>setEmail(e.target.value)}
       />
+      <label for="mdp"></label>
       <input
+        id="mdp"
         type="text"
         className="inputBox"
         placeholder="Entrez votre mot de passe"
@@ -52,7 +60,7 @@ const Login = () => {
         onChange={(e)=>setPassword(e.target.value)}
       />
       <button onClick={handleLogin} type="button" className="appButton">Connexion</button>
-    </div>
+    </form>
   );
 };
 

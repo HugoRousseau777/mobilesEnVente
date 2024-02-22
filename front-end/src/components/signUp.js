@@ -22,8 +22,12 @@ const SignUp=()=>{
         }
     }, [])
     
+    function handleFormSubmit(event) {
+        event.preventDefault();
+      }
+
     const collectData=async()=> {        
-            let result = await fetch("https://uuu-3fwk.onrender.com/register", { /*Remplacement du localhost pour connecter le BA au FE  */
+            let result = await fetch("http://localhost:5000/register", { /*Remplacement du localhost pour connecter le BA au FE  */
             method:'post',
             body:JSON.stringify({name, email, password, confirmPassword}),
             headers:{
@@ -41,6 +45,8 @@ const SignUp=()=>{
             localStorage.setItem('cart', JSON.stringify([])); // Ajout panier
             navigate("/");
             }
+
+            // Double name and/or email
             if(result.doubleName){
                 setDoubleName(true);
                 setNameProposition(result.doubleName.name + "2");
@@ -53,28 +59,32 @@ const SignUp=()=>{
     };
        
     return (
-        <div className="register">
+        <form onSubmit={handleFormSubmit} className="register">
             <h1>Inscription</h1>
-            <input className="inputBox" type="text" placeholder="Entrez un nom"
+            <label for="nom"></label>
+            <input id="nom" className="inputBox" type="text" placeholder="Entrez un nom"
             value={name} onChange={(e)=>setName(e.target.value)}
             />
             {error && !name && <span className='invalid-input-register'>Entrez un nom !</span>}
             {doubleName && <span className='invalid-input-register'>Déjà pris ! voici une suggestion pour vous : {nameProposition}</span>}
-            <input className="inputBox" type="text" placeholder="Entrez un email"
+            <label for="email"></label>
+            <input id="email" className="inputBox" type="text" placeholder="Entrez un email"
             value={email} onChange={(e)=>setEmail(e.target.value)}
             />
             {error && !email && <span className='invalid-input-register'>Entrez un email !</span>}
             {doubleEmail && <span className='invalid-input-register'>Déjà pris ! voici une suggestion pour vous : {emailProposition}</span>}
-            <input className="inputBox" type="password" placeholder="Entrez un mot de passe"
+            <label for="mdp"></label>          
+            <input id="mdp" className="inputBox" type="password" placeholder="Entrez un mot de passe"
             value = {password} onChange={(e)=>setPassword(e.target.value)}
             />
             {error && !password && <span className='invalid-input-register'>Choisissez votre mot de passe !</span>}
-            <input className="inputBox" type="password" placeholder="Confirmez votre mot de passe !"
+            <label for="mdpC"></label>
+            <input id="mdpC" className="inputBox" type="password" placeholder="Confirmez votre mot de passe !"
             value = {confirmPassword} onChange={(e)=>setConfirmPassword(e.target.value)}
             />
             {error && !confirmPassword && <span className='invalid-input-register'>Confirmez votre mot de passe !</span>}
             <button onClick={collectData} className="appButton" type="button">S'inscrire</button>
-        </div>
+        </form>
     )
 }
 

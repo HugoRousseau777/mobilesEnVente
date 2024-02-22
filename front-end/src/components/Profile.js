@@ -23,7 +23,7 @@ const Profile=()=>{
    
     
     const getAllTheCarts = async()=> {
-        let result = await fetch("https://uuu-3fwk.onrender.com/carts");
+        let result = await fetch("http://localhost:5000/carts");
         result = await result.json();
     }
     getAllTheCarts();
@@ -45,13 +45,12 @@ const Profile=()=>{
 
     const gelSoldProducts = async ()=> {
         let a = [];
-        let result = await fetch("https://uuu-3fwk.onrender.com/carts");
+        let result = await fetch("http://localhost:5000/carts");
         result = await result.json();
         result = Array.from(result);
         result.forEach((command)=> {
             for(let i=0; i<command.cart.length; i++){
                 if(userId === command.cart[i].userId){
-                    console.log(command.cart[i]);
                     a.push(command.cart[i]);
                 }
             }
@@ -60,9 +59,6 @@ const Profile=()=>{
             setSoldProducts(soldProducts.push(a[i]));
         }
         //setSoldProducts(a);
-        console.log(result);
-        console.log(a);
-        console.log(soldProducts);
         setSoldProducts(soldProducts);
         getTotalSold();
     }
@@ -77,7 +73,7 @@ const Profile=()=>{
     
 
     const getCarts = async()=> {
-        let result = await fetch(`https://uuu-3fwk.onrender.com/${userId}`, {
+        let result = await fetch(`http://localhost:5000/${userId}`, {
             headers: {
                 authorization:`bearer ${JSON.parse(localStorage.getItem('token'))}`
             }
@@ -88,7 +84,6 @@ const Profile=()=>{
         let interArticles = 0;
         let interTotal = 0;
         for(let i=0; i<result.length;i++){
-            console.log(result[i].cart.length);
             interArticles += result[i].cart.length;
             interTotal += result[i].total;
         }
@@ -97,8 +92,7 @@ const Profile=()=>{
         }
 
         const deleteProduct= async(id)=>{
-            console.warn(id);
-            let result = await fetch(`https://uuu-3fwk.onrender.com/${id}`, {
+            let result = await fetch(`http://localhost:5000/${id}`, {
                 method:"Delete",
                 headers: {
                     authorization: `bearer ${JSON.parse(localStorage.getItem('token'))}`

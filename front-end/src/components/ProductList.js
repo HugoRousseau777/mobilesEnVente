@@ -1,68 +1,51 @@
 import React, {useEffect, useState} from 'react';
 import {json, Link} from 'react-router-dom';
 
+// Use state to render difference in style
+
 const ProductList=()=>{
 
     const [products, setProducts]= useState([]); // Should be used in getProducts
     const [allProducts, setAllProducts] = useState([]);
-    const [productsInterPrix, setProductsInterPrix] = useState([]);
-    const [productsInterPrixMoreThan, setProductsInterPrixMoreThan] = useState([]);
-    const [productsInterPrixLessThan, setProductsInterPrixLessThan] = useState([]);
-    const [productsInterCondition, setProductsInterCondition] = useState([]);
-    const [productsInterQR, setProductsInterQR] = useState([]);
-    const [productsInterQP, setProductsInterQP] = useState([]);
-    const [productsInterRP, setProductsInterRP] = useState([]);
-    const [productsInterQPR, setProductsInterQPR] = useState([]);
-    const [productsFromSearch, setProductsFromSearch] = useState([]);
-    const [productsCondition, setProductsCondition] = useState([]);
-    const [condition, setCondition] = React.useState('');
-    const [price, setPrice] = React.useState(0);
     const [priceMore, setPriceMore] = useState(0);
     const [priceLess, setPriceLess] = useState(0);
+    const [priceInterval, setPriceInterval] = useState([]);
     const [search, setSearch] = useState("");
-    const [retiredPriceLess, setRetiredPriceLess] = useState([]);
-    const [retiredPriceMore, setRetiredPriceMore] = useState([]);
-
-
-    // Ajustement pour la classe selected :
+    const [searchResult, setSearchResult] = useState([]);
+    const [searchQuality, setSearchQuality] = useState([]);
+    const [perfect, setPerfect] = useState(false);
+    const [good, setGood] = useState(false);
+    const [ok, setOk] = useState(false);
+    const [bad, setBad] = useState(false);
 
     const conditionButtons = Array.from(document.getElementsByClassName("conditionButton"));
-    const [countPerfect, setCountPerfect] = useState(false);
-    const [countGood, setCountGood] = useState(false);
-    const [countOk, setCountOk] = useState(false);
-    const [countBad, setCountBad] = useState(false);
-    const [count, setCount] = useState(0);
-
-    conditionButtons.forEach((condButton)=> {
-        condButton.addEventListener("click", ()=> {
-            setCount(count + 1);
-            if (countPerfect || countGood || countGood || countBad){
-                condButton.classList.remove("selected");
-            } else {
-                condButton.classList.add("selected");
-            }
-        })
-    })
-
     let cart = JSON.parse(localStorage.getItem("cart"));
     let user = JSON.parse(localStorage.getItem("user"));
-    
+
     const path = 'front-end/public/images/';
     const imgs = ['aa.jpeg','dza.jpeg','téléchargement.jpeg'];
-    
     let allRandom = []; // Array des n° d'images aléatoire ; Lgth= au nombre d'article
     for (let i =0; i<products.length; i++){
     let rand = Math.floor(Math.random()*imgs.length);
     allRandom.push(rand);
     }
 
+    function aaa (e) {
+        const ident = e.target.id; // To get id of clicked element
+        const button = document.getElementById(ident);
+        conditionButtons.forEach(button=> {
+            if(button.id !== ident) // That way the toggle works correctly
+            button.classList.remove("selected");
+        })
+        button.classList.toggle("selected");
+    }
+    
     useEffect(()=> {
         getProducts();
     }, [])
 
     const getProducts = async () => {
-        let interM = [];
-        let result = await fetch('https://uuu-3fwk.onrender.com/products', {
+        let result = await fetch('http://localhost:5000/products', {
             headers:{
                 authorization:`bearer ${JSON.parse(localStorage.getItem('token'))}` // Only Change  
                 //Viewable in Network -> products in Name column far down-left -> 
@@ -70,339 +53,142 @@ const ProductList=()=>{
         });
         result = await result.json();
   // Pour faire en sorte que l'utilisateur ne puisse pas voir ses propres produits
+        let interM = [];
         for(let i=0; i<result.length;i++){
             if(result[i].userId !== user._id){
                 interM.push(result[i]);
             }
         }
-        setAllProducts(interM);  
-        setProducts(interM);  // Permet d'avoir un ensemble de produits sans faire d'appel à la BDD  
+        setProducts(interM);
+        setAllProducts(interM);    
     }
 
-// Changes for condition choice :
+const getQuality = async(e) => {
+    const regex = new RegExp(`${search}`);
+    let inter = allProducts; 
 
-    const getPerfect = async() => {
-        const regex = new RegExp(`${search}`);
-        setCountGood(false);
-        setCountOk(false);
-        setCountBad(false);
-
-        conditionButtons[1].classList.remove("selected");
-        conditionButtons[2].classList.remove("selected");
-        conditionButtons[3].classList.remove("selected");
-        conditionButtons[0].classList.add("selected");
-        if (countPerfect == true){
-            conditionButtons[0].classList.remove("selected");
+    const ident = e.target.id;
+    switch (ident) {
+    case 'perfect':
+        if(!perfect){
+            inter = inter.filter((i)=> i.condition === "Perfect");
+        } else {
+            inter = allProducts;
         }
-
-        let inter = []; 
-
-        for(let i=0; i<allProducts.length; i++){ // Gets all products
-           inter.push(allProducts[i]);
+        setPerfect(!perfect);
+        setGood(false);
+        setOk(false);
+        setBad(false);
+        break;
+    case 'good':
+        if(!good){
+            inter = inter.filter((i)=> i.condition == "Perfect").concat(inter.filter((i)=> i.condition == "Good"));
+        } else {
+            inter = allProducts;
         }
-        if (countPerfect == false) { // Deletes non-perfect
-            for (let i=0; i<inter.length; i++){ 
-                if(inter[i].condition == "Good" || inter[i].condition == "Ok" || inter[i].condition == "Bad"){
-                    delete inter[i]
-                }
-            }
-            inter = inter.filter((a)=> a);
-            setProductsInterCondition(inter);
-        }
-        if (search.length >0) { // if search is used => Deletes non-search adequate
-            for(let i=0; i<inter.length; i++){ 
-                if(!regex.test(inter[i].name)) {
-                    delete inter[i];
-                }
-        }
-            inter = inter.filter((a)=> a);
-        }
-        if (priceLess > 0) { 
-            for (let i=0; i<inter.length; i++){
-                if(inter[i].price > priceLess){
-                    delete inter[i]
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        if (priceMore > 0) { 
-            for (let i=0; i<inter.length; i++){
-                if(inter[i].price < priceMore){
-                    delete inter[i]
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        setProducts(inter);
-        setCountPerfect(!countPerfect);
+        setPerfect(false);
+        setGood(!good);
+        setOk(false);
+        setBad(false);
+        break;
+    case 'correct':
+        if(!ok){
+            inter = inter.filter((i)=> i.condition !== "Bad");
+        } else {
+            inter = allProducts;
+        } 
+        setPerfect(false);
+        setGood(false);
+        setOk(!ok);
+        setBad(false);
+        break;
+    default:
+        inter = allProducts;
+        setPerfect(false);
+        setGood(false);
+        setOk(false);
+        setBad(!bad);
     }
-
-    const getGood = async() => {
-        const regex = new RegExp(`${search}`);
-        setCountPerfect(false);
-        setCountOk(false);
-        setCountBad(false);
-
-        conditionButtons[0].classList.remove("selected");
-        conditionButtons[2].classList.remove("selected");
-        conditionButtons[3].classList.remove("selected");
-        conditionButtons[1].classList.add("selected");
-        if (countGood == true){
-            conditionButtons[1].classList.remove("selected");
-        }
-
-        let inter = []; 
-
-        for(let i=0; i<allProducts.length; i++){ // Gets all products
-           inter.push(allProducts[i]);
-        }
-        if (countGood == false) { 
-            for (let i=0; i<inter.length; i++){ 
-                if(inter[i].condition == "Ok" || inter[i].condition == "Bad"){
-                    delete inter[i]
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        if (search.length >0) { // if search is used => Deletes non-search adequate
-            for(let i=0; i<inter.length; i++){ 
-                if(!regex.test(inter[i].name)) {
-                    delete inter[i];
-                }
-        }
-            inter = inter.filter((a)=> a);
-        }
-        if (priceLess > 0) { 
-            for (let i=0; i<inter.length; i++){
-                if(inter[i].price > priceLess){
-                    delete inter[i]
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        if (priceMore > 0) { 
-            for (let i=0; i<inter.length; i++){
-                if(inter[i].price < priceMore){
-                    delete inter[i]
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        setProducts(inter);
-        setCountGood(!countGood);
+    setSearchQuality(inter);
+    if (priceMore) {
+        inter = inter.filter((i)=> i.price > priceMore)
     }
-
-    const getOk = async() => {
-        const regex = new RegExp(`${search}`);
-        setCountGood(false);
-        setCountPerfect(false);
-        setCountBad(false);
-
-        conditionButtons[1].classList.remove("selected");
-        conditionButtons[0].classList.remove("selected");
-        conditionButtons[3].classList.remove("selected");
-        conditionButtons[2].classList.add("selected");
-        if (countOk == true){
-            conditionButtons[2].classList.remove("selected");
-        }
-
-        let inter = []; 
-
-        for(let i=0; i<allProducts.length; i++){ // Gets all products
-           inter.push(allProducts[i]);
-        }
-        if (countOk == false) { // Deletes non-perfect
-            for (let i=0; i<inter.length; i++){ 
-                if(inter[i].condition == "Bad"){
-                    delete inter[i]
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        if (search.length >0) { // if search is used => Deletes non-search adequate
-            for(let i=0; i<inter.length; i++){ 
-                if(!regex.test(inter[i].name)) {
-                    delete inter[i];
-                }
-        }
-            inter = inter.filter((a)=> a);
-        }
-        if (priceLess > 0) { 
-            for (let i=0; i<inter.length; i++){
-                if(inter[i].price > priceLess){
-                    delete inter[i]
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        if (priceMore > 0) { 
-            for (let i=0; i<inter.length; i++){
-                if(inter[i].price < priceMore){
-                    delete inter[i]
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        setProducts(inter);
-        setCountOk(!countOk);
+    if (priceLess) {
+        inter = inter.filter((i)=> i.price < priceLess)
     }
-
-    const getBad = async() => {
-        const regex = new RegExp(`${search}`);
-        setCountGood(false);
-        setCountOk(false);
-        setCountPerfect(false);
-
-        conditionButtons[1].classList.remove("selected");
-        conditionButtons[2].classList.remove("selected");
-        conditionButtons[0].classList.remove("selected");
-        conditionButtons[3].classList.add("selected");
-        if (countBad == true){
-            conditionButtons[3].classList.remove("selected");
-        }
-
-        let inter = []; 
-
-        for(let i=0; i<allProducts.length; i++){ // Gets all products
-           inter.push(allProducts[i]);
-        }
-        if (search.length >0) { // if search is used => Deletes non-search adequate
-            for(let i=0; i<inter.length; i++){ 
-                if(!regex.test(inter[i].name)) {
-                    delete inter[i];
-                }
-        }
-            inter = inter.filter((a)=> a);
-        }
-        if (priceLess > 0) { 
-            for (let i=0; i<inter.length; i++){
-                if(inter[i].price > priceLess){
-                    delete inter[i]
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        if (priceMore > 0) { 
-            for (let i=0; i<inter.length; i++){
-                if(inter[i].price < priceMore){
-                    delete inter[i]
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        setProducts(inter);
-        setCountBad(!countBad);
-    }
+    if(search){
+        inter = inter.filter((i)=> regex.test(i.name));
+    } 
+    setProducts(inter);
+}
 
     const getMoreThan = async(event) => {
-        const regex = new RegExp(`${search}`);
-        let inter = [];
-        let interBis = [];
         let key = event.target.value;
-        if(countPerfect == true || countGood == true || countOk == true || countBad == true) { // On récupère chaque array différent selon la condition activée puis trie selon le prix, Sinon, tous les produits
-            let len = productsInterCondition.length; //!!! Pourquoi l'arrayFilter plus haut n'a pas marché ?!!!
-            for(let i = 0; i < len; i++ ) {
-                productsInterCondition[i] && productsInterCondition.push(productsInterCondition[i]);  // copy non-empty values to the end of the array
-            }
-            productsInterCondition.splice(0 , len);  // cut the array and leave only the non-empty values
-            for(let i=0; i<productsInterCondition.length; i++){
-                if(productsInterCondition[i].price > key) {
-                    inter.push(productsInterCondition[i]);
-                }
-            }
-        } else {
-            for(let i=0; i<allProducts.length; i++){
-                    inter.push(allProducts[i]);
-            }
-        }
-        if (search.length >0) { // if search is used => Deletes non-search adequate
-            for(let i=0; i<inter.length; i++){ 
-                if(!regex.test(inter[i].name)) {
-                    delete inter[i];
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }  
-        if(priceLess > 0) {
-            for(let i=0; i<inter.length; i++){
-                if(inter[i].price > priceLess){
-                    delete inter[i];
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        if(key){
-            setPriceMore(key);
-            for(let i=0; i<inter.length; i++){
-                if(inter[i].price < key){
-                    interBis.push(inter[i]);
-                    delete inter[i];
-                }
-            }
-            inter = inter.filter((a)=> a);
-            setRetiredPriceMore(interBis);
-        } else {
-            setPriceMore(0);
-            for(let i=0; i<retiredPriceMore.length; i++){
-                inter.push(retiredPriceMore[i]);
-        }
-        }
-        setProducts(inter);
+        setPriceMore(key);
     }
 
     const getLessThan = async(event) => {
-        const regex = new RegExp(`${search}`);
-        let inter = [];
-        let interBis = [];
         let key = event.target.value;
-        if(countPerfect == true || countGood == true || countOk == true || countBad == true) { // On récupère chaque array différent selon la condition activée puis trie selon le prix, Sinon, tous les produits
-            let len = productsInterCondition.length; //!!! Pourquoi l'arrayFilter plus haut n'a pas marché ?!!!
-            for(let i = 0; i < len; i++ ) {
-                productsInterCondition[i] && productsInterCondition.push(productsInterCondition[i]);  // copy non-empty values to the end of the array
-            }
-            productsInterCondition.splice(0 , len);  // cut the array and leave only the non-empty values
-            for(let i=0; i<productsInterCondition.length; i++){
-                    inter.push(productsInterCondition[i]);
-            }
-        } else {
-            for(let i=0; i<allProducts.length; i++){
-                    inter.push(allProducts[i]);
-            }
-        }
-        if (search.length >0) { // if search is used => Deletes non-search adequate
-            for(let i=0; i<inter.length; i++){ 
-                if(!regex.test(inter[i].name)) {
-                    delete inter[i];
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }  
-        if(priceMore > 0) {
-            for(let i=0; i<inter.length; i++){
-                if(inter[i].price < priceMore){
-                    delete inter[i];
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        if(key){
-            setPriceLess(key);
-            for(let i=0; i<inter.length; i++){
-                if(inter[i].price > key){
-                    interBis.push(inter[i]);
-                    delete inter[i];
-                }
-            }
-            inter = inter.filter((a)=> a);
-            setRetiredPriceLess(interBis);
-        } else {
-            setPriceLess(0);
-            for(let i=0; i<retiredPriceLess.length; i++){
-                    inter.push(retiredPriceLess[i]);
-            }
-        }
-        setProducts(inter);
+        setPriceLess(key);
     }
+
+    useEffect(()=> {
+        const regex = new RegExp(`${search}`); 
+        let inter = allProducts; 
+        if(perfect || good || ok) {
+            inter = searchQuality;
+        }
+
+        if(priceLess){
+            inter = inter.filter((i)=> i.price < priceLess);
+            if(priceMore){
+                inter = inter.filter((i)=> i.price > priceMore);
+            } 
+        } else if (priceMore) {
+            inter = inter.filter((i)=> i.price > priceMore);
+        } 
+        setProducts(inter);
+        setPriceInterval(inter); // PB Because quality is in it too
+
+        if(search){
+            inter = inter.filter((i)=> regex.test(i.name))
+            setProducts(inter);
+        }
+ 
+    }, [priceLess, priceMore])
+
+    const searchHandle = async(event)=>{
+        let key = event.target.value;
+        setSearch(key);   
+    } 
+
+    useEffect(()=> {
+        let inter = allProducts;
+        // !!! We can put if/else to determine the original array to work with !!!
+        if(perfect || good || ok) {
+            inter = searchQuality;
+            if (priceMore) {
+                inter = inter.filter((i)=> i.price > priceMore)
+            }
+            if (priceLess) {
+                inter = inter.filter((i)=> i.price < priceLess)
+            }
+        } else if(priceInterval.length > 0) {
+            inter = priceInterval;
+        } else {
+            inter = allProducts;
+        }
+        
+        if(search) {
+            const regex = new RegExp(`${search}`);
+            let searchResult = inter.filter((i)=> regex.test(i.name));
+            setProducts(searchResult);
+        } else {
+            setProducts(inter);
+
+        }
+        setSearchResult(searchResult);
+    }, [search])
    
     const deleteProduct= async(id)=>{
         console.warn(id);
@@ -431,69 +217,33 @@ const ProductList=()=>{
         localStorage.setItem("cart",JSON.stringify(cart));
         alert("Product added to cart !");
     }
-  
-    const searchHandle = async(event)=>{
-        let inter = [];
-        let key = event.target.value;
-        if(countPerfect == true || countGood == true || countOk == true || countBad == true) { 
-            let len = productsInterCondition.length; 
-            for(let i = 0; i < len; i++ ) {
-                productsInterCondition[i] && productsInterCondition.push(productsInterCondition[i]);  
-            }
-            productsInterCondition.splice(0 , len);  
-            for(let i=0; i<productsInterCondition.length; i++){
-                    inter.push(productsInterCondition[i]);
-            }
-        } else {
-            for(let i=0; i<allProducts.length; i++){
-                    inter.push(allProducts[i]);
-            }
-        }
-        if(priceMore > 0) {
-            for(let i=0; i<inter.length; i++){
-                if(inter[i].price < priceMore){
-                    delete inter[i];
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        if(priceLess > 0) {
-            for(let i=0; i<inter.length; i++){
-                if(inter[i].price > priceLess){
-                    delete inter[i];
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        if(key) {
-            setSearch(key);
-            const regex = new RegExp(`${search}`);
-            for(let i=0; i<inter.length; i++){ 
-                if(!regex.test(inter[i].name)) {
-                    delete inter[i];
-                }
-            }
-            inter = inter.filter((a)=> a);
-        }
-        setProducts(inter);
-        }   
-
+    
     return (
         <div className="product-list">
             <h1>Liste des produits</h1>
-            <input type="text" className="search-product-box" placeholder="Recherchez votre produit !" onChange={searchHandle}/>
-            <input type="number" className="search-product-box" onChange={getMoreThan}  placeholder="Plus de ... €"/>
-            <input type="number" className="search-product-box" onChange={getLessThan}  placeholder="Moins de ... €"/>
-            <p>Choisissez un état acceptable pour votre achat, vous aurez cet état et mieux :</p>
+            <input type="text" className="search-product-box" placeholder="Recherchez votre produit !" onChange={(event)=> { searchHandle(event)}}/>
+            <input type="number" className="search-product-box" onChange={(event)=> {
+                getMoreThan(event);
+                }}  placeholder="Plus de ... €"/>
+            <input type="number" className="search-product-box" onChange={(event)=> {
+                getLessThan(event);
+                }}  placeholder="Moins de ... €"/>
+            <p>Choisissez une condition acceptable pour votre achat, vous aurez cet état et mieux :</p>
             <div className="condition containerCondBut">
-            <button className="conditionButton" onClick={()=> {
-                    getPerfect();
+            <button className="conditionButton" id="perfect" onClick={(e)=> {
+                    getQuality(e);
+                    aaa(e);
                     }}>Parfait</button> 
-                <button className="conditionButton" onClick={()=>{
-                     getGood();
+                <button className="conditionButton" id="good" onClick={(e)=>{
+                     getQuality(e);
+                     aaa(e)
                     }}>Bon</button> 
-                <button className="conditionButton" onClick={()=>getOk()}>Correct</button> 
-                <button className="conditionButton" onClick={()=>getBad()}>Mauvais</button> 
+                <button className="conditionButton" id="correct" onClick={(e)=>{
+                    getQuality(e);
+                    aaa(e);}}>Correct</button> 
+                <button className="conditionButton" id="bad" onClick={(e)=>{
+                    getQuality(e);
+                    aaa(e);}}>Mauvais</button> 
             </div>
             <div className="products">
             {
