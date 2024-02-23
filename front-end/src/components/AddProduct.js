@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {json, Link} from 'react-router-dom';
 const AddProduct =  ()=> {
+    
+
 
     const [name, setName] = React.useState(''); // No need to import !
     const [price, setPrice] = React.useState('');
@@ -40,7 +42,7 @@ const AddProduct =  ()=> {
         }
         const userId = JSON.parse(localStorage.getItem('user'))._id; // localStorage.getItem('user')._id doesnt work
         console.warn(userId);
-        let result = await fetch("http://localhost:5000/add-product",{ // Doit être l'adresse de la route
+        let result = await fetch("https://final-7wfu.onrender.com/add-product",{ // Doit être l'adresse de la route
             method:"post",
             body:JSON.stringify({name, price, condition, company, userId}),
             headers: {

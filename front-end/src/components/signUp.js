@@ -28,7 +28,7 @@ const SignUp=()=>{
       }
 
     const collectData=async()=> {        
-            let result = await fetch("http://localhost:5000/register", { /*Remplacement du localhost pour connecter le BA au FE  */
+            let result = await fetch("https://final-7wfu.onrender.com/register", { /*Remplacement du localhost pour connecter le BA au FE  */
             method:'post',
             body:JSON.stringify({name, email, password, confirmPassword}),
             headers:{

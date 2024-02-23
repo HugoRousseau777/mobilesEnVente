@@ -52,7 +52,7 @@ const ProductList=()=>{
     }, [products])
 
     const getProducts = async () => {
-        let result = await fetch('http://localhost:5000/products', {
+        let result = await fetch('https://final-7wfu.onrender.com/products', {
             headers:{
                 authorization:`bearer ${JSON.parse(localStorage.getItem('token'))}` // Only Change  
                 //Viewable in Network -> products in Name column far down-left -> 
@@ -199,7 +199,7 @@ const getQuality = async(e) => {
    
     const deleteProduct= async(id)=>{
         console.warn(id);
-        let result = await fetch(`http://localhost:5000/product/${id}`, {
+        let result = await fetch(`https://final-7wfu.onrender.com/product/${id}`, {
             method:"Delete",
             headers: {
                 authorization: `bearer ${JSON.parse(localStorage.getItem('token'))}`
@@ -214,7 +214,7 @@ const getQuality = async(e) => {
     }
 
     const addToCart= async(id)=> {
-        let result = await fetch(`http://localhost:5000/product/${id}`, {
+        let result = await fetch(`https://final-7wfu.onrender.com/product/${id}`, {
             headers: {
                 authorization: `bearer ${JSON.parse(localStorage.getItem('token'))}`
             }
