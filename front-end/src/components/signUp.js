@@ -4,6 +4,7 @@ import {useNavigate} from 'react-router-dom';
 const SignUp=()=>{
     const [name, setName]=useState("");
     const [email, setEmail]=useState("");
+    const [invalidEmail, setInvalidEmail]=useState(false);
     const [password, setPassword]=useState("");
     const [confirmPassword, setConfirmPassword]=useState("");
     const [error, setError] = React.useState(false);
@@ -47,38 +48,43 @@ const SignUp=()=>{
             }
 
             // Double name and/or email
-            if(result.doubleName){
+            if(result.newName){
                 setDoubleName(true);
-                setNameProposition(result.doubleName.name + "2");
+                setNameProposition(result.newName); 
             }
-            if(result.doubleEmail){
+            if(result.newEmail){
                 setDoubleEmail(true);
-                setEmailProposition(result.doubleEmail.email + "2");
+                setEmailProposition(result.newEmail);
             }
-        
+            if(result.email){
+                setInvalidEmail(true);
+                console.log(result.email);
+                console.log("youpi");
+            }
     };
        
     return (
         <form onSubmit={handleFormSubmit} className="register">
             <h1>Inscription</h1>
-            <label for="nom"></label>
+            <label htmlFor="nom"></label>
             <input id="nom" className="inputBox" type="text" placeholder="Entrez un nom"
             value={name} onChange={(e)=>setName(e.target.value)}
             />
             {error && !name && <span className='invalid-input-register'>Entrez un nom !</span>}
             {doubleName && <span className='invalid-input-register'>Déjà pris ! voici une suggestion pour vous : {nameProposition}</span>}
-            <label for="email"></label>
+            <label htmlFor="email"></label>
             <input id="email" className="inputBox" type="text" placeholder="Entrez un email"
             value={email} onChange={(e)=>setEmail(e.target.value)}
             />
             {error && !email && <span className='invalid-input-register'>Entrez un email !</span>}
             {doubleEmail && <span className='invalid-input-register'>Déjà pris ! voici une suggestion pour vous : {emailProposition}</span>}
-            <label for="mdp"></label>          
+            {invalidEmail && <span className='invalid-input-register'>Désolé, mais l'email n'a pas une forme valide.</span>}
+            <label htmlFor="mdp"></label>          
             <input id="mdp" className="inputBox" type="password" placeholder="Entrez un mot de passe"
             value = {password} onChange={(e)=>setPassword(e.target.value)}
             />
             {error && !password && <span className='invalid-input-register'>Choisissez votre mot de passe !</span>}
-            <label for="mdpC"></label>
+            <label htmlFor="mdpC"></label>
             <input id="mdpC" className="inputBox" type="password" placeholder="Confirmez votre mot de passe !"
             value = {confirmPassword} onChange={(e)=>setConfirmPassword(e.target.value)}
             />

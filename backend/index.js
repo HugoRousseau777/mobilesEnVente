@@ -43,7 +43,7 @@ app.get("/carts", async(req,res)=> {
   const carts = await UserCart.find();
       res.send(carts);
 })
-
+/*
 app.get("/doubleName/:name", async (req, res)=> {
   const doubleName = await User.findOne({name: req.params.name});
   if(doubleName) {
@@ -55,42 +55,72 @@ app.get("/doubleName/:name", async (req, res)=> {
 })
 
 app.get("/doubleEmail/:email", async (req, res)=> {
-  const doubleEmail = await User.findOne({email: req.params.email});
+  let doubleEmail = await User.findOne({email: req.params.email});
   if(doubleEmail) {
-    let emailProposition = doubleEmail.email + "2";
+    let emailProposition = doubleEmail;
+    while(doubleEmail == emailProposition) {
+      emailProposition = doubleEmail.email + "2";
+      doubleEmail = await User.findOne({email: doubleEmail});
+    }
+
+    
     res.send(emailProposition).json();
   } else {
     res.send("L'email est disponible").json();
   }
 })
-
+*/
 app.post("/register", async (req, res) => {
   let user = new User(req.body);
-  const doubleName = await User.findOne({name: req.body.name});
-  const doubleEmail = await User.findOne({email: req.body.email});
+  let doubleName = await User.findOne({name: req.body.name});
+  let doubleEmail = await User.findOne({email: req.body.email});
 
   if(!doubleName && !doubleEmail) {
     if(req.body.password !== req.body.confirmPassword){
       res.send("Confirmez correctement votre mot de passe !")
     } else {
       // Si les MDP sont = && le nom et l'email ne sont pas pris : 
+      emailVerif = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+      if(emailVerif.test(req.body.email)){
       let result = await user.save(); 
       Jwt.sign({result}, jwtKey, {expiresIn : "2h"}, (err, token) => {
         if (err) {
           res.send("Something went wrong");
         }
         res.send({result, auth: token});
-      })
+      })} else {
+        res.send({email: req.body.email});
+      }
     }
   } else {
       if(doubleEmail && doubleName) {
-        res.send({doubleName, doubleEmail});
+        let newName = doubleName.name;
+        let newEmail = doubleEmail.email;
+        while(doubleName){
+          newName = doubleName.name + "2";
+          doubleName = await User.findOne({name: newName});
+        }
+        while(doubleEmail){
+          newEmail = doubleEmail.email + "2";
+          doubleEmail = await User.findOne({email: newEmail});
+        }
+        res.send({newName, newEmail});
       }
       else if(doubleName) {
-        res.send({doubleName});
+        let newName = doubleName.name;
+        while(doubleName){
+          newName = doubleName + "2";
+          doubleName = await User.findOne({name: newName});
+        }
+        res.send({newName});
       }
       else if(doubleEmail) {
-        res.send({doubleEmail});
+        let newEmail = doubleEmail.email;
+        while(doubleEmail){
+          newEmail = newEmail + "2";
+          doubleEmail = await User.findOne({email: newEmail});
+        }
+        res.send({newEmail});
       }
   }
     

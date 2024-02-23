@@ -2,10 +2,14 @@ import React, {useEffect, useState} from 'react';
 import {json, Link} from 'react-router-dom';
 
 // Use state to render difference in style
+// !!! Using a select would be better for number of prod per page, why doesn't it work ? !!!
 
 const ProductList=()=>{
 
-    const [products, setProducts]= useState([]); // Should be used in getProducts
+    const [productsStart, setProductsStart] = useState(0);
+    const [productsPerPage, setProductsPerPage] = useState(10);
+    const [productsEnd, setProductsEnd] = useState(10);
+    const [products, setProducts]= useState([]); 
     const [allProducts, setAllProducts] = useState([]);
     const [priceMore, setPriceMore] = useState(0);
     const [priceLess, setPriceLess] = useState(0);
@@ -43,6 +47,9 @@ const ProductList=()=>{
     useEffect(()=> {
         getProducts();
     }, [])
+    useEffect(()=> {
+        console.log(products.length);
+    }, [products])
 
     const getProducts = async () => {
         let result = await fetch('http://localhost:5000/products', {
@@ -217,6 +224,15 @@ const getQuality = async(e) => {
         localStorage.setItem("cart",JSON.stringify(cart));
         alert("Product added to cart !");
     }
+
+    const handlePaginationLess = async()=> {
+            setProductsStart(productsStart - productsPerPage);
+            setProductsEnd(productsEnd - productsPerPage);
+    }
+    const handlePaginationPlus = async()=> {
+            setProductsStart(productsStart + productsPerPage);
+            setProductsEnd(productsEnd + productsPerPage);
+    }
     
     return (
         <div className="product-list">
@@ -247,7 +263,7 @@ const getQuality = async(e) => {
             </div>
             <div className="products">
             {
-               products.length>0 ? products.map((item, index)=> 
+               products.length>0 ? (products.slice(productsStart, productsEnd + 1)).map((item, index)=> 
                <>
                <div className="product">
                    <div className="product-img">
@@ -266,9 +282,27 @@ const getQuality = async(e) => {
                     </div>
                 </div>
                 </>
-                )
-                : <h1>Pas de résultat ...</h1>
+                ) : <h1>Pas de résultat ...</h1>
             }
+            </div>
+            <div>
+                <button disabled={productsStart == 0} onClick={handlePaginationLess}>Previous</button>
+                <button disabled={products.length + productsPerPage< productsEnd + productsPerPage} onClick={handlePaginationPlus}>Next</button>
+                <button onClick={()=> {
+                    setProductsStart(0);
+                    setProductsEnd(5);
+                    setProductsPerPage(5)
+                }}>5 per page</button>
+                <button onClick={()=> {
+                    setProductsStart(0);
+                    setProductsEnd(10);
+                    setProductsPerPage(10)
+                }}>10 per page</button>
+                <button onClick={()=> {
+                    setProductsStart(0);
+                    setProductsEnd(15);
+                    setProductsPerPage(15)
+                }}>15 per page</button>
             </div>
         </div>
     )
