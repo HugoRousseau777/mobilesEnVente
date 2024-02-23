@@ -43,33 +43,7 @@ app.get("/carts", async(req,res)=> {
   const carts = await UserCart.find();
       res.send(carts);
 })
-/*
-app.get("/doubleName/:name", async (req, res)=> {
-  const doubleName = await User.findOne({name: req.params.name});
-  if(doubleName) {
-    let nameProposition = doubleName.name + "2";
-    res.send(nameProposition).json();
-  } else {
-    res.send("Le nom est disponible").json();
-  }
-})
 
-app.get("/doubleEmail/:email", async (req, res)=> {
-  let doubleEmail = await User.findOne({email: req.params.email});
-  if(doubleEmail) {
-    let emailProposition = doubleEmail;
-    while(doubleEmail == emailProposition) {
-      emailProposition = doubleEmail.email + "2";
-      doubleEmail = await User.findOne({email: doubleEmail});
-    }
-
-    
-    res.send(emailProposition).json();
-  } else {
-    res.send("L'email est disponible").json();
-  }
-})
-*/
 app.post("/register", async (req, res) => {
   let user = new User(req.body);
   let doubleName = await User.findOne({name: req.body.name});
