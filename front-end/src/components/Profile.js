@@ -23,7 +23,7 @@ const Profile=()=>{
    
     
     const getAllTheCarts = async()=> {
-        let result = await fetch("https://final-7wfu.onrender.com/carts");
+        let result = await fetch("http://localhost:5000/carts");
         result = await result.json();
     }
     getAllTheCarts();
@@ -45,7 +45,7 @@ const Profile=()=>{
 
     const gelSoldProducts = async ()=> {
         let a = [];
-        let result = await fetch("https://final-7wfu.onrender.com/carts");
+        let result = await fetch("http://localhost:5000/carts");
         result = await result.json();
         result = Array.from(result);
         result.forEach((command)=> {
@@ -73,7 +73,7 @@ const Profile=()=>{
     
 
     const getCarts = async()=> {
-        let result = await fetch(`https://final-7wfu.onrender.com/${userId}`, {
+        let result = await fetch(`http://localhost:5000/${userId}`, {
             headers: {
                 authorization:`bearer ${JSON.parse(localStorage.getItem('token'))}`
             }
@@ -92,7 +92,7 @@ const Profile=()=>{
         }
 
         const deleteProduct= async(id)=>{
-            let result = await fetch(`https://final-7wfu.onrender.com/${id}`, {
+            let result = await fetch(`http://localhost:5000/${id}`, {
                 method:"Delete",
                 headers: {
                     authorization: `bearer ${JSON.parse(localStorage.getItem('token'))}`

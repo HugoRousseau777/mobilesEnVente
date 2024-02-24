@@ -8,7 +8,7 @@ const ProductList=()=>{
 
     const [productsStart, setProductsStart] = useState(0);
     const [productsPerPage, setProductsPerPage] = useState(10);
-    const [productsEnd, setProductsEnd] = useState(10);
+    const [productsEnd, setProductsEnd] = useState(9);
     const [products, setProducts]= useState([]); 
     const [allProducts, setAllProducts] = useState([]);
     const [priceMore, setPriceMore] = useState(0);
@@ -52,7 +52,7 @@ const ProductList=()=>{
     }, [products])
 
     const getProducts = async () => {
-        let result = await fetch('https://final-7wfu.onrender.com/products', {
+        let result = await fetch('http://localhost:5000/products', {
             headers:{
                 authorization:`bearer ${JSON.parse(localStorage.getItem('token'))}` // Only Change  
                 //Viewable in Network -> products in Name column far down-left -> 
@@ -199,7 +199,7 @@ const getQuality = async(e) => {
    
     const deleteProduct= async(id)=>{
         console.warn(id);
-        let result = await fetch(`https://final-7wfu.onrender.com/product/${id}`, {
+        let result = await fetch(`http://localhost:5000/product/${id}`, {
             method:"Delete",
             headers: {
                 authorization: `bearer ${JSON.parse(localStorage.getItem('token'))}`
@@ -214,7 +214,7 @@ const getQuality = async(e) => {
     }
 
     const addToCart= async(id)=> {
-        let result = await fetch(`https://final-7wfu.onrender.com/product/${id}`, {
+        let result = await fetch(`http://localhost:5000/product/${id}`, {
             headers: {
                 authorization: `bearer ${JSON.parse(localStorage.getItem('token'))}`
             }
@@ -233,7 +233,21 @@ const getQuality = async(e) => {
             setProductsStart(productsStart + productsPerPage);
             setProductsEnd(productsEnd + productsPerPage);
     }
-    
+  
+  const priceIncOrder = async ()=> {
+  function comparePrice(a, b) {
+    return a.price - b.price;
+  }
+  setProducts([...products.sort(comparePrice)]);
+  }
+
+  const priceDecOrder = async ()=> {
+  function comparePrice(a, b) {
+    return b.price - a.price;
+  }
+  setProducts([...products.sort(comparePrice)]);
+  }
+      
     return (
         <div className="product-list">
             <h1>Liste des produits</h1>
@@ -244,9 +258,14 @@ const getQuality = async(e) => {
             <input type="number" className="search-product-box" onChange={(event)=> {
                 getLessThan(event);
                 }}  placeholder="Moins de ... €"/>
-            <p>Choisissez une condition acceptable pour votre achat, vous aurez cet état et mieux :</p>
-            <div className="condition containerCondBut">
-            <button className="conditionButton" id="perfect" onClick={(e)=> {
+            <div className="increaseDecrease">
+                <button className="super-button" onClick={priceIncOrder}>Par prix croissant</button>
+                <button className="super-button" onClick={priceDecOrder}>Par prix décroisant</button>
+            </div>
+            <div className="conditionContainer">
+            <p>Choisissez une condition acceptable pour votre achat, <br/> vous aurez cet état et mieux :</p>
+                <div className="condition containerCondBut">
+                <button className="conditionButton" id="perfect" onClick={(e)=> {
                     getQuality(e);
                     aaa(e);
                     }}>Parfait</button> 
@@ -260,6 +279,30 @@ const getQuality = async(e) => {
                 <button className="conditionButton" id="bad" onClick={(e)=>{
                     getQuality(e);
                     aaa(e);}}>Mauvais</button> 
+                </div>
+            </div>
+            <div className="prodPageSettings">
+                <div className="prevNext">
+                    <button className="super-button" onClick={()=> {
+                    setProductsStart(0);
+                    setProductsEnd(4);
+                    setProductsPerPage(5)
+                    }}>5 par page</button>
+                    <button className="super-button" onClick={()=> {
+                    setProductsStart(0);
+                    setProductsEnd(9);
+                    setProductsPerPage(10)
+                    }}>10 par page</button>
+                    <button className="super-button" onClick={()=> {
+                    setProductsStart(0);
+                    setProductsEnd(14);
+                    setProductsPerPage(15)
+                    }}>15 par page</button>
+                </div>
+                <div>
+                    <button className="super-button" disabled={productsStart == 0} onClick={handlePaginationLess}>Précédent</button>
+                    <button className="super-button" disabled={products.length + productsPerPage< productsEnd + productsPerPage} onClick={handlePaginationPlus}>Suivant</button>
+                </div>
             </div>
             <div className="products">
             {
@@ -284,25 +327,6 @@ const getQuality = async(e) => {
                 </>
                 ) : <h1>Pas de résultat ...</h1>
             }
-            </div>
-            <div>
-                <button disabled={productsStart == 0} onClick={handlePaginationLess}>Previous</button>
-                <button disabled={products.length + productsPerPage< productsEnd + productsPerPage} onClick={handlePaginationPlus}>Next</button>
-                <button onClick={()=> {
-                    setProductsStart(0);
-                    setProductsEnd(5);
-                    setProductsPerPage(5)
-                }}>5 per page</button>
-                <button onClick={()=> {
-                    setProductsStart(0);
-                    setProductsEnd(10);
-                    setProductsPerPage(10)
-                }}>10 per page</button>
-                <button onClick={()=> {
-                    setProductsStart(0);
-                    setProductsEnd(15);
-                    setProductsPerPage(15)
-                }}>15 per page</button>
             </div>
         </div>
     )
